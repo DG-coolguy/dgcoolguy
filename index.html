@@ -1,0 +1,3155 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <script type="module" src="/@vite/client"></script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>망각 타임캡슐 - AI 3줄 공부 복습 앱</title>
+    <meta
+      name="description"
+      content="오늘 배운 내용을 3줄로 정리해 캡슐에 담으면 1일, 3일, 7일, 30일 뒤 AI가 맞춤형 퀴즈로 복습시켜주는 고등학생 학습 도구입니다."
+    />
+    <meta property="og:title" content="망각 타임캡슐 - AI 3줄 공부 복습 앱" />
+    <meta
+      property="og:description"
+      content="오늘 배운 내용을 3줄로 정리해 캡슐에 담으면 1일, 3일, 7일, 30일 뒤 AI가 맞춤형 퀴즈로 복습시켜주는 고등학생 학습 도구입니다."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-canvas: #faf8f5;
+        --bg-card: #ffffff;
+        --bg-subtle: #f3efe8;
+        --border-color: #e6e1d8;
+        --text-primary: #1f242d;
+        --text-secondary: #5f6672;
+        --accent-navy: #2b4c7e;
+        --accent-navy-hover: #223d66;
+        --accent-amber: #c87d28;
+        --accent-amber-hover: #b06c20;
+        --accent-amber-text: #8f5312;
+        --accent-green: #2f7d5b;
+        --accent-red: #c84b4b;
+        --accent-red-hover: #b23d3d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--bg-canvas);
+        color: var(--text-primary);
+        font-family: "Plus Jakarta Sans", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        line-height: 1.5;
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font-family: inherit;
+      }
+
+      .mono-num {
+        font-family: "IBM Plex Mono", "Noto Sans KR", monospace;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .tabular-nums {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .top-header {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .header-inner {
+        max-width: 1152px;
+        height: 100%;
+        margin: 0 auto;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand-btn {
+        background: none;
+        border: none;
+        padding: 4px 0;
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .desktop-nav {
+        display: none;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .nav-link {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 6px 2px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .nav-link:hover {
+        color: var(--text-primary);
+      }
+
+      .nav-link.active {
+        color: var(--accent-navy);
+        font-weight: 600;
+        border-bottom-color: var(--accent-navy);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .icon-btn {
+        min-height: 40px;
+        padding: 6px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        white-space: nowrap;
+        text-decoration: none;
+        transition: all 0.15s ease;
+      }
+
+      .icon-btn:hover {
+        color: var(--text-primary);
+        background: var(--bg-canvas);
+      }
+
+      .icon-btn.active {
+        background: var(--accent-navy);
+        border-color: var(--accent-navy);
+        color: #ffffff;
+      }
+
+      .icon-btn.tint {
+        color: var(--accent-navy);
+        background: rgba(43, 76, 126, 0.08);
+        border-color: rgba(43, 76, 126, 0.25);
+      }
+
+      .icon-btn.tint:hover {
+        background: var(--accent-navy);
+        color: #ffffff;
+      }
+
+      /* Demo Date Banner */
+      .demo-banner {
+        background: rgba(200, 125, 40, 0.12);
+        border-bottom: 1px solid rgba(200, 125, 40, 0.3);
+        padding: 8px 16px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--accent-amber-text);
+      }
+
+      .demo-reset-link {
+        background: none;
+        border: none;
+        margin-left: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent-amber-text);
+        text-decoration: underline;
+        cursor: pointer;
+      }
+
+      /* Main Content */
+      .main-content {
+        flex: 1;
+        width: 100%;
+        max-width: 1152px;
+        margin: 0 auto;
+        padding: 24px 16px 92px;
+      }
+
+      /* Layout Grid */
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 18px;
+        padding: 20px;
+      }
+
+      .card-subtle {
+        background: var(--bg-canvas);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 16px;
+      }
+
+      .section-header {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      h1.page-title {
+        margin: 4px 0 0;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      h2.section-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .muted {
+        color: var(--text-secondary);
+      }
+
+      .small-text {
+        font-size: 12px;
+      }
+
+      .body-text {
+        font-size: 14px;
+      }
+
+      /* Buttons */
+      .btn {
+        min-height: 44px;
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        white-space: nowrap;
+        text-decoration: none;
+        transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .btn-primary {
+        background: var(--accent-navy);
+        color: #ffffff;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--accent-navy-hover);
+      }
+
+      .btn-amber {
+        background: var(--accent-amber);
+        color: #ffffff;
+      }
+
+      .btn-amber:hover:not(:disabled) {
+        background: var(--accent-amber-hover);
+      }
+
+      .btn-green {
+        background: var(--accent-green);
+        color: #ffffff;
+      }
+
+      .btn-green:hover:not(:disabled) {
+        background: #26674b;
+      }
+
+      .btn-danger {
+        background: var(--accent-red);
+        color: #ffffff;
+      }
+
+      .btn-danger:hover:not(:disabled) {
+        background: var(--accent-red-hover);
+      }
+
+      .btn-outline {
+        background: var(--bg-canvas);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+      }
+
+      .btn-outline:hover:not(:disabled) {
+        background: var(--bg-subtle);
+      }
+
+      .btn-danger-outline {
+        background: #ffffff;
+        border-color: rgba(200, 75, 75, 0.45);
+        color: var(--accent-red);
+      }
+
+      .btn-danger-outline:hover:not(:disabled) {
+        background: rgba(200, 75, 75, 0.08);
+      }
+
+      .btn-sm {
+        min-height: 36px;
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 10px;
+      }
+
+      .full-width {
+        width: 100%;
+      }
+
+      /* Lists & Dividers */
+      .divide-list > * + * {
+        border-top: 1px solid var(--border-color);
+      }
+
+      .due-item {
+        padding: 16px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .due-item:first-child {
+        padding-top: 4px;
+      }
+
+      .due-item:last-child {
+        padding-bottom: 0;
+      }
+
+      .meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .subject-label {
+        font-weight: 700;
+        color: var(--accent-navy);
+      }
+
+      .overdue-label {
+        font-weight: 600;
+        color: var(--accent-amber);
+      }
+
+      .mastered-label {
+        font-weight: 600;
+        color: var(--accent-green);
+      }
+
+      .topic-title {
+        margin: 4px 0 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      /* Stats Grid */
+      .stats-two {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .stat-value {
+        margin: 4px 0 0;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      /* Form Inputs */
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .field-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .input,
+      .textarea,
+      .select {
+        width: 100%;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-canvas);
+        color: var(--text-primary);
+        padding: 11px 14px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+      }
+
+      .input:focus,
+      .textarea:focus,
+      .select:focus {
+        border-color: var(--accent-navy);
+        background: #ffffff;
+      }
+
+      .textarea {
+        resize: vertical;
+        min-height: 76px;
+      }
+
+      .subject-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .subject-btn {
+        min-height: 42px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-canvas);
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .subject-btn.selected {
+        background: var(--accent-navy);
+        border-color: var(--accent-navy);
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      /* Alerts & Notices */
+      .alert {
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid;
+        font-size: 13px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .alert-success {
+        background: rgba(47, 125, 91, 0.08);
+        border-color: rgba(47, 125, 91, 0.3);
+        color: #215b42;
+      }
+
+      .alert-error {
+        background: rgba(200, 75, 75, 0.08);
+        border-color: rgba(200, 75, 75, 0.3);
+        color: #9e2f2f;
+      }
+
+      .alert-warn {
+        background: rgba(200, 125, 40, 0.1);
+        border-color: rgba(200, 125, 40, 0.3);
+        color: var(--accent-amber-text);
+      }
+
+      .alert-info {
+        background: rgba(43, 76, 126, 0.07);
+        border-color: rgba(43, 76, 126, 0.25);
+        color: var(--accent-navy);
+      }
+
+      /* Correction & Analysis Items */
+      .analysis-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 14px;
+      }
+
+      .correction-box {
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-canvas);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 13px;
+      }
+
+      .confidence-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+
+      .confidence-sure {
+        background: rgba(47, 125, 91, 0.12);
+        color: var(--accent-green);
+      }
+
+      .confidence-check {
+        background: rgba(200, 125, 40, 0.15);
+        color: var(--accent-amber-text);
+      }
+
+      /* Filter Tabs */
+      .filter-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .filter-tab {
+        min-height: 38px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .filter-tab.active {
+        background: var(--accent-navy);
+        border-color: var(--accent-navy);
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      /* Modal */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        background: rgba(31, 36, 45, 0.48);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        overflow-y: auto;
+      }
+
+      .modal-panel {
+        width: 100%;
+        max-width: 680px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        box-shadow: 0 24px 48px rgba(31, 36, 45, 0.16);
+      }
+
+      .choice-option {
+        width: 100%;
+        min-height: 46px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-canvas);
+        color: var(--text-primary);
+        text-align: left;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.15s ease;
+      }
+
+      .choice-option.selected {
+        background: rgba(43, 76, 126, 0.1);
+        border-color: var(--accent-navy);
+        color: var(--accent-navy);
+        font-weight: 600;
+      }
+
+      /* Mobile Bottom Nav */
+      .mobile-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 30;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--border-color);
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .mobile-nav-btn {
+        background: none;
+        border: none;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+      }
+
+      .mobile-nav-btn.active {
+        color: var(--accent-navy);
+        font-weight: 700;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 36px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .empty-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        background: rgba(47, 125, 91, 0.12);
+        color: var(--accent-green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .progress-bar-track {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--bg-subtle);
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: var(--accent-navy);
+      }
+
+      .stack-sm {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .stack-md {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .stack-lg {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .row-between {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .row-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (min-width: 640px) {
+        .card {
+          padding: 24px;
+        }
+        .section-header {
+          flex-direction: row;
+          align-items: flex-end;
+          justify-content: space-between;
+        }
+        .due-item {
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .row-actions {
+          flex-direction: row;
+        }
+        h1.page-title {
+          font-size: 28px;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .top-header {
+          height: 64px;
+        }
+        .header-inner {
+          padding: 0 24px;
+        }
+        .desktop-nav {
+          display: flex;
+        }
+        .mobile-nav {
+          display: none;
+        }
+        .main-content {
+          padding: 32px 24px 48px;
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .dashboard-grid {
+          grid-template-columns: 8fr 4fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .subject-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  <script src="/_aistudio-iframe.js?v=29045eb3"></script></head>
+  <body>
+    <div id="app" class="app-shell"></div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var STORAGE_KEY = "forgetting_capsule_data_v1";
+        var SUBJECTS = ["국어", "영어", "수학", "한국사", "통합사회", "통합과학", "정보", "기타"];
+        var STAGE_INTERVALS = [1, 3, 7, 30];
+        var STAGE_LABELS = {
+          0: "1일 차 복습",
+          1: "3일 차 복습",
+          2: "7일 차 복습",
+          3: "30일 차 복습",
+          4: "장기 기억 완료",
+        };
+        var QUESTION_TYPE_LABELS = {
+          multiple_choice: "객관식",
+          fill_blank: "빈칸 채우기",
+          short_essay: "한 줄 서술형",
+        };
+        var RESULT_LABELS = {
+          correct: "정답",
+          partial: "부분 정답",
+          incorrect: "오답",
+        };
+
+        var memoryFallbackStorage = null;
+
+        var state = {
+          storage: loadStorage(),
+          activeTab: "home",
+          reviewingCapsuleId: null,
+          downloadNotice: null,
+          // Create screen
+          createSubject: "정보",
+          createTopic: "",
+          createLines: ["", "", ""],
+          createAnalysis: null,
+          createLoading: false,
+          createError: null,
+          // Archive filters
+          archiveFilter: "all",
+          archiveSubject: "전체",
+          archiveSearch: "",
+          expandedCapsuleIds: {},
+          confirmDeleteId: null,
+          // Report
+          reportLoading: false,
+          reportError: null,
+          // Settings
+          settingsNotice: null,
+          confirmResetAll: false,
+          // Quiz modal
+          quizState: null,
+        };
+
+        /* -------------------- SVG Icons -------------------- */
+        function iconSvg(name, size) {
+          var s = size || 16;
+          var paths = {
+            home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',
+            plus: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/>',
+            archive: '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
+            chart: '<path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>',
+            settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>',
+            download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+            upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+            arrowRight: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+            check: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+            clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+            lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+            sparkles: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>',
+            alert: '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+            trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+            database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+            calendarPlus: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M10 16h4"/><path d="M12 14v4"/>',
+            rotate: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+            x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+            loader: '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+            fileCode: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m10 13-2 2 2 2"/><path d="m14 17 2-2-2-2"/>',
+          };
+          var cls = name === "loader" ? "spin" : "";
+          return (
+            '<svg class="' +
+            cls +
+            '" width="' +
+            s +
+            '" height="' +
+            s +
+            '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            (paths[name] || "") +
+            "</svg>"
+          );
+        }
+
+        function escapeHtml(str) {
+          return String(str == null ? "" : str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+        }
+
+        /* -------------------- Date Utilities -------------------- */
+        function getTodayStr() {
+          var now = new Date();
+          var y = now.getFullYear();
+          var m = String(now.getMonth() + 1).padStart(2, "0");
+          var d = String(now.getDate()).padStart(2, "0");
+          return y + "-" + m + "-" + d;
+        }
+
+        function parseLocalDate(dateStr) {
+          var parts = String(dateStr).split("-").map(Number);
+          return new Date(parts[0], (parts[1] || 1) - 1, parts[2] || 1);
+        }
+
+        function addDays(dateStr, days) {
+          var dt = parseLocalDate(dateStr);
+          dt.setDate(dt.getDate() + days);
+          var y = dt.getFullYear();
+          var m = String(dt.getMonth() + 1).padStart(2, "0");
+          var d = String(dt.getDate()).padStart(2, "0");
+          return y + "-" + m + "-" + d;
+        }
+
+        function diffDays(fromStr, toStr) {
+          var a = parseLocalDate(fromStr).getTime();
+          var b = parseLocalDate(toStr).getTime();
+          return Math.round((b - a) / 86400000);
+        }
+
+        function getVirtualToday(offset) {
+          return addDays(getTodayStr(), offset || 0);
+        }
+
+        function formatKoreanDate(dateStr) {
+          var dt = parseLocalDate(dateStr);
+          var days = ["일", "월", "화", "수", "목", "금", "토"];
+          return (
+            dt.getFullYear() +
+            "년 " +
+            (dt.getMonth() + 1) +
+            "월 " +
+            dt.getDate() +
+            "일 (" +
+            days[dt.getDay()] +
+            ")"
+          );
+        }
+
+        function getSortedDueCapsules(capsules, todayStr) {
+          return capsules
+            .filter(function (c) {
+              return !c.isMastered && diffDays(c.nextReviewDate, todayStr) >= 0;
+            })
+            .map(function (c) {
+              var overdueDays = Math.max(0, diffDays(c.nextReviewDate, todayStr));
+              var adjustedForLongOverdue = overdueDays >= 14 && c.stage > 0;
+              var effectiveStage = adjustedForLongOverdue ? Math.max(0, c.stage - 1) : c.stage;
+              return {
+                capsule: c,
+                overdueDays: overdueDays,
+                effectiveStage: effectiveStage,
+                adjustedForLongOverdue: adjustedForLongOverdue,
+              };
+            })
+            .sort(function (a, b) {
+              if (b.overdueDays !== a.overdueDays) return b.overdueDays - a.overdueDays;
+              return a.capsule.createdAt.localeCompare(b.capsule.createdAt);
+            });
+        }
+
+        function getUpcomingCapsules(capsules, todayStr) {
+          return capsules
+            .filter(function (c) {
+              return !c.isMastered && diffDays(todayStr, c.nextReviewDate) > 0;
+            })
+            .map(function (c) {
+              return {
+                capsule: c,
+                daysLeft: diffDays(todayStr, c.nextReviewDate),
+              };
+            })
+            .sort(function (a, b) {
+              return a.daysLeft - b.daysLeft;
+            });
+        }
+
+        function applyReviewOutcome(capsule, todayStr, outcome) {
+          var overdueDays = Math.max(0, diffDays(capsule.nextReviewDate, todayStr));
+          var baseStage = overdueDays >= 14 && capsule.stage > 0 ? Math.max(0, capsule.stage - 1) : capsule.stage;
+
+          if (outcome === "correct") {
+            var nextStage = baseStage + 1;
+            if (nextStage >= 4) {
+              return Object.assign({}, capsule, {
+                stage: 4,
+                isMastered: true,
+                nextReviewDate: todayStr,
+              });
+            }
+            var interval = STAGE_INTERVALS[nextStage] || 30;
+            return Object.assign({}, capsule, {
+              stage: nextStage,
+              isMastered: false,
+              nextReviewDate: addDays(todayStr, interval),
+            });
+          }
+
+          if (outcome === "partial") {
+            return Object.assign({}, capsule, {
+              stage: baseStage,
+              isMastered: false,
+              nextReviewDate: addDays(todayStr, 1),
+            });
+          }
+
+          return Object.assign({}, capsule, {
+            stage: 0,
+            isMastered: false,
+            nextReviewDate: addDays(todayStr, 1),
+          });
+        }
+
+        /* -------------------- Storage -------------------- */
+        function defaultStorage() {
+          return { capsules: [], weeklyReport: null, demoDayOffset: 0 };
+        }
+
+        function loadStorage() {
+          try {
+            var raw = window.localStorage.getItem(STORAGE_KEY);
+            if (!raw) return defaultStorage();
+            var parsed = JSON.parse(raw);
+            return {
+              capsules: Array.isArray(parsed.capsules) ? parsed.capsules : [],
+              weeklyReport: parsed.weeklyReport || null,
+              demoDayOffset: typeof parsed.demoDayOffset === "number" ? parsed.demoDayOffset : 0,
+            };
+          } catch (e) {
+            return memoryFallbackStorage || defaultStorage();
+          }
+        }
+
+        function saveStorage(data) {
+          memoryFallbackStorage = data;
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          } catch (e) {
+            // file:// strict mode fallback uses memoryFallbackStorage
+          }
+        }
+
+        function commitStorage(next) {
+          state.storage = next;
+          saveStorage(next);
+        }
+
+        /* -------------------- Sample Capsules -------------------- */
+        function createSampleCapsules(baseToday) {
+          return [
+            {
+              id: "sample_kor_1",
+              subject: "국어",
+              topic: "음운 변동: 비음화와 유음화",
+              lines: [
+                "받침 ㄱ, ㄷ, ㅂ이 비음 ㄴ, ㅁ을 만나면 각각 ㅇ, ㄴ, ㅁ으로 바뀐다.",
+                "예로 '국물'은 [궁물]로, '먹는'은 [멍는]으로 발음된다.",
+                "ㄴ과 ㄹ이 만나면 ㄴ이 ㄹ로 바뀌어 '신라'는 [실라]로 소리 난다.",
+              ],
+              aiAnalysis: {
+                keyConcepts: ["비음화(ㄱ·ㄷ·ㅂ → ㅇ·ㄴ·ㅁ)", "유음화(ㄴ+ㄹ / ㄹ+ㄴ → ㄹ+ㄹ)", "음운 동화의 방향성"],
+                confusingPoints: ["표기는 그대로 두고 발음만 바뀐다는 점을 헷갈리기 쉽습니다.", "ㄹ 뒤에서 ㄴ이 ㄹ로 바뀌지 않는 한자어 예외('생산량' 등)도 주의하세요."],
+                corrections: [],
+              },
+              stage: 1,
+              nextReviewDate: addDays(baseToday, -16),
+              isMastered: false,
+              createdAt: addDays(baseToday, -20),
+              reviewHistory: [
+                {
+                  date: addDays(baseToday, -19),
+                  questionType: "fill_blank",
+                  question: "받침 ㄱ, ㄷ, ㅂ이 ㄴ, ㅁ 앞에서 ㅇ, ㄴ, ㅁ으로 바뀌는 현상을 ____라고 한다.",
+                  userAnswer: "비음화",
+                  result: "correct",
+                  aiFeedback: "비음화의 정의와 조건을 정확히 기억하고 있습니다.",
+                },
+              ],
+            },
+            {
+              id: "sample_info_1",
+              subject: "정보",
+              topic: "이진수와 16진수 변환",
+              lines: [
+                "컴퓨터는 0과 1 두 숫자로만 데이터를 표현하는 이진법을 사용한다.",
+                "이진수 4자리는 16진수 1자리(0~9, A~F)에 정확히 대응한다.",
+                "그래서 1010(2)은 10진수로 10이고 16진수로는 B이다.",
+              ],
+              aiAnalysis: {
+                keyConcepts: ["2진법(Base-2)", "16진법(0~9, A~F)", "4비트-1니블 대응 관계"],
+                confusingPoints: ["16진수 문자 A=10, B=11, C=12, D=13, E=14, F=15 순서를 자릿수 하나씩 밀려 쓰기 쉽습니다."],
+                corrections: [
+                  {
+                    original: "1010(2)은 10진수로 10이고 16진수로는 B이다.",
+                    corrected: "10진수 10은 16진수로 A입니다. B는 10진수 11(이진수 1011)에 해당합니다.",
+                    reason: "16진수는 10부터 A, 11은 B, 12는 C 순으로 표기합니다.",
+                    confidence: "확실",
+                  },
+                ],
+              },
+              stage: 0,
+              nextReviewDate: addDays(baseToday, -2),
+              isMastered: false,
+              createdAt: addDays(baseToday, -3),
+              reviewHistory: [
+                {
+                  date: addDays(baseToday, -2),
+                  questionType: "multiple_choice",
+                  question: "이진수 1111(2)을 16진수로 올바르게 나타낸 것은?",
+                  userAnswer: "E",
+                  result: "incorrect",
+                  aiFeedback: "1111(2)는 8+4+2+1=15이므로 16진수 F입니다.",
+                },
+              ],
+            },
+            {
+              id: "sample_math_1",
+              subject: "수학",
+              topic: "나머지 정리와 인수정리",
+              lines: [
+                "다항식 P(x)를 (x-a)로 나눈 나머지는 P(a)와 같다.",
+                "만약 P(a)=0이면 P(x)는 (x-a)를 인수로 가진다고 판단한다.",
+                "이차식 (x-a)(x-b)로 나눌 때는 나머지를 일차식 ax+b 형태로 놓는다.",
+              ],
+              aiAnalysis: {
+                keyConcepts: ["나머지 정리 R = P(a)", "인수정리 P(a)=0", "나누는 식보다 차수가 낮은 나머지"],
+                confusingPoints: ["(x+a)로 나눌 때 P(a)가 아니라 P(-a)를 대입해야 합니다."],
+                corrections: [],
+              },
+              stage: 1,
+              nextReviewDate: baseToday,
+              isMastered: false,
+              createdAt: addDays(baseToday, -3),
+              reviewHistory: [
+                {
+                  date: addDays(baseToday, -2),
+                  questionType: "short_essay",
+                  question: "다항식 P(x)가 (x-2)로 나누어떨어진다는 것을 식으로 어떻게 확인하나요?",
+                  userAnswer: "P(2)가 0인지 대입해 봅니다.",
+                  result: "correct",
+                  aiFeedback: "인수정리의 핵심 조건 P(2)=0을 정확히 설명했습니다.",
+                },
+              ],
+            },
+            {
+              id: "sample_sci_1",
+              subject: "통합과학",
+              topic: "이온 결합과 공유 결합의 차이",
+              lines: [
+                "이온 결합은 금속과 비금속 원소가 전자를 주고받아 정전기적 인력으로 결합한다.",
+                "공유 결합은 비금속 원소끼리 전자쌍을 공유하며 형성된다.",
+                "이온 결합 물질은 고체 상태에서도 전류가 아주 잘 통한다.",
+              ],
+              aiAnalysis: {
+                keyConcepts: ["이온 결합(전자 이동)", "공유 결합(전자쌍 공유)", "이온 결정의 전기 전도성"],
+                confusingPoints: ["고체 상태와 액체·수용액 상태의 전기 전도성을 구분해야 합니다."],
+                corrections: [
+                  {
+                    original: "이온 결합 물질은 고체 상태에서도 전류가 아주 잘 통한다.",
+                    corrected: "이온 결합 물질은 고체 상태에서는 이온이 자유롭게 이동할 수 없어 전류가 통하지 않고, 액체나 수용액 상태에서 전류가 통합니다.",
+                    reason: "전류가 흐르려면 전하를 띤 입자가 자유롭게 움직여야 합니다.",
+                    confidence: "확실",
+                  },
+                ],
+              },
+              stage: 2,
+              nextReviewDate: addDays(baseToday, 3),
+              isMastered: false,
+              createdAt: addDays(baseToday, -4),
+              reviewHistory: [
+                {
+                  date: addDays(baseToday, -1),
+                  questionType: "short_essay",
+                  question: "고체 소금(NaCl)에 전류가 흐르지 않는 이유를 한 줄로 설명해보세요.",
+                  userAnswer: "이온들이 단단히 고정되어 움직이지 못하기 때문입니다.",
+                  result: "partial",
+                  aiFeedback: "핵심 원인은 맞았으나 양이온과 음이온의 이동 제한임을 함께 적으면 더 좋습니다.",
+                },
+              ],
+            },
+            {
+              id: "sample_eng_1",
+              subject: "영어",
+              topic: "관계대명사 that vs 관계부사 where",
+              lines: [
+                "관계대명사 뒤에는 주어나 목적어가 빠진 불완전한 문장이 온다.",
+                "관계부사 where 뒤에는 주어와 목적어가 모두 있는 완전한 문장이 온다.",
+                "선행사가 장소 명사면 무조건 where를 써야 한다.",
+              ],
+              aiAnalysis: {
+                keyConcepts: ["관계대명사(불완전한 절)", "관계부사(완전한 절)", "뒷문장 구조 판별법"],
+                confusingPoints: ["선행사의 의미(장소/시간)만 보고 고르면 실수하기 쉽습니다."],
+                corrections: [
+                  {
+                    original: "선행사가 장소 명사면 무조건 where를 써야 한다.",
+                    corrected: "선행사가 장소 명사라도 뒷문장에 주어·목적어가 빠져 있으면 관계대명사(which/that)를 써야 합니다.",
+                    reason: "관계사와 관계부사의 선택 기준은 선행사가 아니라 뒷절의 완전성입니다.",
+                    confidence: "확실",
+                  },
+                ],
+              },
+              stage: 1,
+              nextReviewDate: addDays(baseToday, 2),
+              isMastered: false,
+              createdAt: addDays(baseToday, -2),
+              reviewHistory: [],
+            },
+            {
+              id: "sample_hist_1",
+              subject: "한국사",
+              topic: "갑오개혁의 주요 내용",
+              lines: [
+                "1894년 1차 갑오개혁은 군국기무처를 중심으로 추진되었다.",
+                "신분제 폐지, 과거제 폐지, 조혼 금지 등 근대적 사회 개혁이 이루어졌다.",
+                "2차 갑오개혁에서는 교육입국조서와 홍범 14조가 반포되었다.",
+              ],
+              aiAnalysis: {
+                keyConcepts: ["1차 갑오개혁(군국기무처)", "신분제·과거제 폐지", "2차 갑오개혁(홍범 14조·교육입국조서)"],
+                confusingPoints: ["1차(군국기무처 중심)와 2차(박영효 내각 중심) 기구·문서를 구분하세요."],
+                corrections: [],
+              },
+              stage: 4,
+              nextReviewDate: addDays(baseToday, -5),
+              isMastered: true,
+              createdAt: addDays(baseToday, -45),
+              reviewHistory: [
+                {
+                  date: addDays(baseToday, -6),
+                  questionType: "multiple_choice",
+                  question: "1차 갑오개혁 당시 개혁을 주도한 핵심 기구는 무엇인가요?",
+                  userAnswer: "군국기무처",
+                  result: "correct",
+                  aiFeedback: "1차 갑오개혁의 핵심 기구를 정확하게 기억하고 있습니다.",
+                },
+              ],
+            },
+          ];
+        }
+
+        /* -------------------- AI + Offline Fallback Engine -------------------- */
+        function canUseServerApi() {
+          return window.location.protocol === "http:" || window.location.protocol === "https:";
+        }
+
+        function postJsonWithTimeout(url, body, timeoutMs) {
+          var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+          var timer = controller
+            ? window.setTimeout(function () {
+                controller.abort();
+              }, timeoutMs || 25000)
+            : null;
+
+          return fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            signal: controller ? controller.signal : undefined,
+          })
+            .then(function (res) {
+              return res
+                .json()
+                .catch(function () {
+                  return {};
+                })
+                .then(function (data) {
+                  if (!res.ok) {
+                    var err = new Error(data.error || "요청 실패 (HTTP " + res.status + ")");
+                    err.status = res.status;
+                    err.category = data.category || "unknown";
+                    throw err;
+                  }
+                  return data;
+                });
+            })
+            .finally(function () {
+              if (timer) window.clearTimeout(timer);
+            });
+        }
+
+        function extractKeywords(text) {
+          var stopWords = {
+            있다: true,
+            한다: true,
+            된다: true,
+            이다: true,
+            그리고: true,
+            하지만: true,
+            때문에: true,
+            통해: true,
+            대한: true,
+            경우: true,
+            것이다: true,
+            때문: true,
+            한다며: true,
+          };
+          var tokens = String(text || "")
+            .replace(/[^\w가-힣\s]/g, " ")
+            .split(/\s+/)
+            .map(function (t) {
+              return t.trim();
+            })
+            .filter(function (t) {
+              return t.length >= 2 && !stopWords[t];
+            });
+          var seen = {};
+          var unique = [];
+          for (var i = 0; i < tokens.length; i++) {
+            var k = tokens[i];
+            if (!seen[k]) {
+              seen[k] = true;
+              unique.push(k);
+            }
+          }
+          return unique;
+        }
+
+        function localAnalyze(subject, topic, lines) {
+          var joined = lines.join(" ");
+          var keywords = extractKeywords(topic + " " + joined).slice(0, 4);
+          var keyConcepts = keywords.length >= 2
+            ? keywords.slice(0, 3)
+            : [topic + " 핵심 원리", subject + " 주요 개념", "정의와 적용 조건"];
+
+          var confusingPoints = [
+            "'" + topic + "'에서 용어의 정확한 정의와 예외 조건을 혼동하지 않도록 주의하세요.",
+          ];
+          if (lines[1]) {
+            confusingPoints.push("두 번째 줄의 핵심 관계(" + lines[1].slice(0, 28) + (lines[1].length > 28 ? "..." : "") + ")를 예시와 함께 다시 확인하세요.");
+          }
+
+          var corrections = [];
+          if (/무조건|항상|절대|모두\s/.test(joined)) {
+            corrections.push({
+              original: lines.find(function (l) {
+                return /무조건|항상|절대|모두\s/.test(l);
+              }) || lines[0],
+              corrected: "일반적인 규칙이더라도 교과서 상 예외 조건이 있는지 함께 확인해 주세요.",
+              reason: "'항상·무조건'처럼 단정적인 표현은 예외 사례에서 오답으로 이어질 수 있습니다.",
+              confidence: "교과서 확인 권장",
+            });
+          }
+
+          return {
+            keyConcepts: keyConcepts,
+            confusingPoints: confusingPoints,
+            corrections: corrections,
+            mode: "local",
+          };
+        }
+
+        function localGenerateQuiz(capsule) {
+          var line0 = capsule.lines[0] || capsule.topic;
+          var line1 = capsule.lines[1] || capsule.lines[0] || capsule.topic;
+          var line2 = capsule.lines[2] || capsule.lines[1] || capsule.topic;
+          var concepts = (capsule.aiAnalysis && capsule.aiAnalysis.keyConcepts) || [capsule.topic];
+          var kw = extractKeywords(line1 + " " + line0);
+          var blankWord = concepts[0] && concepts[0].length <= 12 ? concepts[0] : kw[0] || capsule.topic;
+          var blankSentence = line1.indexOf(blankWord) !== -1
+            ? line1.replace(blankWord, "____")
+            : "'" + capsule.topic + "'에서 핵심이 되는 개념은 ____이다.";
+
+          var mcQuestion =
+            "[" +
+            capsule.subject +
+            "] '" +
+            capsule.topic +
+            "'에 대한 설명으로 가장 알맞은 것은?";
+          var correctOpt = line0;
+          var wrong1 = "'" + capsule.topic + "'은(는) 다른 개념과 전혀 관계없이 단독으로만 쓰인다.";
+          var wrong2 = "학습한 내용과 반대로 조건이 바뀌어도 결과는 항상 동일하다.";
+          var wrong3 = "이 개념은 예외 없이 모든 상황에 동일하게 적용된다.";
+          var options = [correctOpt, wrong1, wrong2, wrong3];
+          // Deterministic shuffle based on capsule.id + minute so it varies
+          var shift = (capsule.reviewHistory.length + new Date().getSeconds()) % 4;
+          var rotated = [];
+          for (var i = 0; i < 4; i++) {
+            rotated.push(options[(i + shift) % 4]);
+          }
+          var answerIdx = rotated.indexOf(correctOpt);
+
+          return {
+            questions: [
+              {
+                id: "q1",
+                type: "multiple_choice",
+                question: mcQuestion,
+                options: rotated,
+                correctOptionIndex: answerIdx,
+                answerKey: correctOpt,
+                explanation: "정리한 핵심 내용: " + line0,
+              },
+              {
+                id: "q2",
+                type: "fill_blank",
+                question: "다음 빈칸에 들어갈 알맞은 말을 적어보세요.\n" + blankSentence,
+                answerKey: blankWord,
+                explanation: "핵심 개념 키워드는 '" + blankWord + "'입니다.",
+              },
+              {
+                id: "q3",
+                type: "short_essay",
+                question: "'" + capsule.topic + "'의 핵심 원리나 주의할 점을 한 문장으로 설명해보세요.",
+                answerKey: line2,
+                explanation: "모범 요지: " + line2,
+              },
+            ],
+            mode: "local",
+          };
+        }
+
+        function localGradeAnswer(question, userAnswer) {
+          var ans = String(userAnswer || "").trim();
+          var key = String(question.answerKey || "").trim();
+          if (!ans) {
+            return {
+              result: "incorrect",
+              feedback: "답안이 입력되지 않았습니다. 핵심 개념을 다시 확인해 보세요.",
+            };
+          }
+
+          if (question.type === "fill_blank") {
+            var normAns = ans.replace(/\s+/g, "").toLowerCase();
+            var normKey = key.replace(/\s+/g, "").toLowerCase();
+            if (normAns === normKey || normKey.indexOf(normAns) !== -1 && normAns.length >= 2 || normAns.indexOf(normKey) !== -1) {
+              return {
+                result: "correct",
+                feedback: "핵심 용어 '" + key + "'을(를) 정확히 맞혔습니다.",
+              };
+            }
+            return {
+              result: "incorrect",
+              feedback: "아쉽습니다. 빈칸에 알맞은 핵심 개념은 '" + key + "'입니다.",
+            };
+          }
+
+          var keyWords = extractKeywords(key);
+          var ansWords = extractKeywords(ans);
+          var matched = 0;
+          for (var i = 0; i < keyWords.length; i++) {
+            if (ans.toLowerCase().indexOf(keyWords[i].toLowerCase()) !== -1) {
+              matched++;
+            }
+          }
+          var ratio = keyWords.length > 0 ? matched / keyWords.length : 0;
+
+          if (ratio >= 0.45 || (ansWords.length >= 3 && matched >= 2)) {
+            return {
+              result: "correct",
+              feedback: "핵심 개념을 자신의 문장으로 잘 설명했습니다.",
+            };
+          }
+          if (matched >= 1 || ans.length >= 10) {
+            return {
+              result: "partial",
+              feedback: "방향은 맞지만 핵심 키워드('" + keyWords.slice(0, 2).join(", ") + "')를 함께 포함하면 더 완벽합니다.",
+            };
+          }
+          return {
+            result: "incorrect",
+            feedback: "핵심 내용과 거리가 있습니다. 해설을 확인하고 내일 다시 복습해 보세요.",
+          };
+        }
+
+        function localWeeklyReport(capsules, todayStr) {
+          var weekAgo = addDays(todayStr, -7);
+          var recent = [];
+          for (var i = 0; i < capsules.length; i++) {
+            var c = capsules[i];
+            for (var j = 0; j < c.reviewHistory.length; j++) {
+              var h = c.reviewHistory[j];
+              if (diffDays(weekAgo, h.date) >= 0) {
+                recent.push({ subject: c.subject, h: h });
+              }
+            }
+          }
+
+          var subjStats = {};
+          var typeStats = {};
+          for (var k = 0; k < recent.length; k++) {
+            var item = recent[k];
+            if (!subjStats[item.subject]) subjStats[item.subject] = { total: 0, miss: 0 };
+            subjStats[item.subject].total++;
+            if (item.h.result !== "correct") subjStats[item.subject].miss++;
+
+            var tLabel = QUESTION_TYPE_LABELS[item.h.questionType] || item.h.questionType;
+            if (!typeStats[tLabel]) typeStats[tLabel] = { total: 0, miss: 0 };
+            typeStats[tLabel].total++;
+            if (item.h.result !== "correct") typeStats[tLabel].miss++;
+          }
+
+          var weakestSubject = "아직 충분한 기록 없음";
+          var worstRate = -1;
+          Object.keys(subjStats).forEach(function (subj) {
+            var st = subjStats[subj];
+            var rate = st.miss / st.total;
+            if (rate > worstRate) {
+              worstRate = rate;
+              weakestSubject = subj;
+            }
+          });
+
+          var weakestType = "아직 충분한 기록 없음";
+          var worstTypeRate = -1;
+          Object.keys(typeStats).forEach(function (t) {
+            var st = typeStats[t];
+            var rate = st.miss / st.total;
+            if (rate > worstTypeRate) {
+              worstTypeRate = rate;
+              weakestType = t;
+            }
+          });
+
+          return {
+            weakestSubject: weakestSubject,
+            weakestQuestionType: weakestType,
+            patternSummary:
+              "최근 7일간 총 " +
+              recent.length +
+              "회 복습을 완료했습니다. " +
+              (weakestSubject !== "아직 충분한 기록 없음"
+                ? "'" + weakestSubject + "' 과목과 '" + weakestType + "' 문제에서 오답·부분 정답 비율이 상대적으로 높게 나타났습니다."
+                : "아직 복습 데이터가 적어 정확한 취약 패턴을 분석하려면 퀴즈 복습을 2~3회 이상 진행해 주세요."),
+            recommendations: [
+              weakestSubject !== "아직 충분한 기록 없음"
+                ? weakestSubject + " 과목은 캡슐을 봉인할 때 '헷갈리기 쉬운 부분'을 소리 내어 한 번 더 읽어보세요."
+                : "매일 공부 후 3줄 정리로 1개 이상의 캡슐을 꾸준히 담아보세요.",
+              "서술형이나 빈칸 문제를 풀 때는 핵심 용어 2개 이상을 꼭 문장에 포함해 답해보세요.",
+              "오답이 나온 캡슐은 다음 날 바로 다시 열어서 1일 차 기억을 고정하는 것이 효과적입니다.",
+            ],
+          };
+        }
+
+        function requestAnalysis(subject, topic, lines) {
+          if (!canUseServerApi()) {
+            return Promise.resolve(localAnalyze(subject, topic, lines));
+          }
+          return postJsonWithTimeout("/api/analyze", { subject: subject, topic: topic, lines: lines }, 30000).catch(
+            function (err) {
+              if (err && (err.status === 404 || err.status === 405 || err.status === 501)) {
+                return localAnalyze(subject, topic, lines);
+              }
+              throw err;
+            }
+          );
+        }
+
+        function requestQuiz(capsule) {
+          if (!canUseServerApi()) {
+            return Promise.resolve(localGenerateQuiz(capsule));
+          }
+          return postJsonWithTimeout("/api/quiz", { capsule: capsule }, 30000).catch(function (err) {
+            if (err && (err.status === 404 || err.status === 405 || err.status === 501)) {
+              return localGenerateQuiz(capsule);
+            }
+            throw err;
+          });
+        }
+
+        function requestGrade(capsule, question, userAnswer) {
+          if (!canUseServerApi()) {
+            return Promise.resolve(localGradeAnswer(question, userAnswer));
+          }
+          return postJsonWithTimeout(
+            "/api/grade",
+            {
+              subject: capsule.subject,
+              topic: capsule.topic,
+              question: question.question,
+              answerKey: question.answerKey,
+              questionType: question.type,
+              userAnswer: userAnswer,
+            },
+            25000
+          ).catch(function (err) {
+            if (err && (err.status === 404 || err.status === 405 || err.status === 501)) {
+              return localGradeAnswer(question, userAnswer);
+            }
+            throw err;
+          });
+        }
+
+        function requestWeeklyReport(capsules, todayStr) {
+          if (!canUseServerApi()) {
+            return Promise.resolve(localWeeklyReport(capsules, todayStr));
+          }
+          var weekAgo = addDays(todayStr, -7);
+          var recentHistory = [];
+          capsules.forEach(function (c) {
+            c.reviewHistory.forEach(function (h) {
+              if (diffDays(weekAgo, h.date) >= 0) {
+                recentHistory.push({
+                  subject: c.subject,
+                  topic: c.topic,
+                  date: h.date,
+                  questionType: h.questionType,
+                  result: h.result,
+                });
+              }
+            });
+          });
+          return postJsonWithTimeout(
+            "/api/weekly-report",
+            {
+              totalCapsules: capsules.length,
+              masteredCount: capsules.filter(function (c) {
+                return c.isMastered;
+              }).length,
+              recentHistory: recentHistory,
+            },
+            30000
+          ).catch(function (err) {
+            if (err && (err.status === 404 || err.status === 405 || err.status === 501)) {
+              return localWeeklyReport(capsules, todayStr);
+            }
+            throw err;
+          });
+        }
+
+        /* -------------------- Download Helpers -------------------- */
+        function triggerBlobDownload(content, filename, mimeType) {
+          var blob = new Blob([content], { type: mimeType });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = filename;
+          link.style.display = "none";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.setTimeout(function () {
+            URL.revokeObjectURL(url);
+          }, 30000);
+        }
+
+        function downloadCleanIndexHtml() {
+          if (canUseServerApi()) {
+            fetch("/index.html", { cache: "no-store" })
+              .then(function (res) {
+                if (!res.ok) throw new Error("fetch failed");
+                return res.text();
+              })
+              .then(function (html) {
+                triggerBlobDownload(html, "index.html", "text/html;charset=utf-8");
+                state.downloadNotice = {
+                  type: "success",
+                  message:
+                    "index.html 단일 파일 다운로드를 시작했습니다. 자동 저장이 막히면 오른쪽 '새 창에서 받기'를 눌러주세요.",
+                };
+                render();
+              })
+              .catch(function () {
+                fallbackSelfHtmlDownload();
+              });
+          } else {
+            fallbackSelfHtmlDownload();
+          }
+        }
+
+        function fallbackSelfHtmlDownload() {
+          var clone = document.documentElement.cloneNode(true);
+          var appEl = clone.querySelector("#app");
+          if (appEl) appEl.innerHTML = "";
+          var html = "<!doctype html>\n" + clone.outerHTML;
+          triggerBlobDownload(html, "index.html", "text/html;charset=utf-8");
+          state.downloadNotice = {
+            type: "success",
+            message: "index.html 단일 파일 다운로드를 시작했습니다. GitHub에 그대로 올려 Vercel에 배포할 수 있습니다.",
+          };
+          render();
+        }
+
+        /* -------------------- Quiz Flow -------------------- */
+        function startQuiz(capsuleId) {
+          var capsule = state.storage.capsules.find(function (c) {
+            return c.id === capsuleId;
+          });
+          if (!capsule) return;
+
+          state.reviewingCapsuleId = capsuleId;
+          state.quizState = {
+            loading: true,
+            error: null,
+            questions: [],
+            currentIndex: 0,
+            selectedOption: null,
+            textAnswer: "",
+            grading: false,
+            gradeError: null,
+            answers: [],
+            finished: false,
+            outcome: null,
+            updatedCapsule: null,
+          };
+          render();
+
+          requestQuiz(capsule)
+            .then(function (data) {
+              if (!state.quizState || state.reviewingCapsuleId !== capsuleId) return;
+              state.quizState.loading = false;
+              state.quizState.questions = Array.isArray(data.questions) ? data.questions : [];
+              if (state.quizState.questions.length === 0) {
+                state.quizState.error = "퀴즈 문항을 생성하지 못했습니다. 다시 시도해 주세요.";
+              }
+              render();
+            })
+            .catch(function (err) {
+              if (!state.quizState || state.reviewingCapsuleId !== capsuleId) return;
+              state.quizState.loading = false;
+              state.quizState.error = err && err.message ? err.message : "퀴즈 생성 중 오류가 발생했습니다.";
+              render();
+            });
+        }
+
+        function submitCurrentQuestion() {
+          var qs = state.quizState;
+          if (!qs || qs.grading || qs.loading) return;
+          var capsule = state.storage.capsules.find(function (c) {
+            return c.id === state.reviewingCapsuleId;
+          });
+          if (!capsule) return;
+          var q = qs.questions[qs.currentIndex];
+          if (!q) return;
+
+          if (q.type === "multiple_choice") {
+            if (qs.selectedOption === null) {
+              qs.gradeError = "보기를 하나 선택해 주세요.";
+              render();
+              return;
+            }
+            var chosen = (q.options || [])[qs.selectedOption] || "";
+            var isCorrect = qs.selectedOption === q.correctOptionIndex;
+            recordQuestionAnswer({
+              question: q,
+              userAnswer: chosen,
+              result: isCorrect ? "correct" : "incorrect",
+              feedback: isCorrect
+                ? "정확합니다! " + (q.explanation || "")
+                : "정답은 '" + ((q.options || [])[q.correctOptionIndex] || q.answerKey) + "'입니다. " + (q.explanation || ""),
+            });
+            return;
+          }
+
+          var textAns = (qs.textAnswer || "").trim();
+          if (!textAns) {
+            qs.gradeError = "답안을 입력해 주세요.";
+            render();
+            return;
+          }
+
+          qs.grading = true;
+          qs.gradeError = null;
+          render();
+
+          requestGrade(capsule, q, textAns)
+            .then(function (res) {
+              if (!state.quizState) return;
+              state.quizState.grading = false;
+              recordQuestionAnswer({
+                question: q,
+                userAnswer: textAns,
+                result: res.result || "partial",
+                feedback: res.feedback || q.explanation || "",
+              });
+            })
+            .catch(function (err) {
+              if (!state.quizState) return;
+              state.quizState.grading = false;
+              state.quizState.gradeError = err && err.message ? err.message : "채점 중 오류가 발생했습니다.";
+              render();
+            });
+        }
+
+        function recordQuestionAnswer(entry) {
+          var qs = state.quizState;
+          if (!qs) return;
+          qs.answers.push(entry);
+          qs.gradeError = null;
+
+          if (qs.currentIndex + 1 < qs.questions.length) {
+            qs.currentIndex += 1;
+            qs.selectedOption = null;
+            qs.textAnswer = "";
+            render();
+            return;
+          }
+
+          // Finalize quiz outcome
+          var correctCount = qs.answers.filter(function (a) {
+            return a.result === "correct";
+          }).length;
+          var partialCount = qs.answers.filter(function (a) {
+            return a.result === "partial";
+          }).length;
+          var total = qs.answers.length;
+
+          var overall = "incorrect";
+          if (correctCount === total || (total >= 2 && correctCount >= total - 1 && partialCount >= 1)) {
+            overall = correctCount === total ? "correct" : "partial";
+          } else if (correctCount > 0 || partialCount > 0) {
+            overall = "partial";
+          }
+
+          var capsule = state.storage.capsules.find(function (c) {
+            return c.id === state.reviewingCapsuleId;
+          });
+          if (!capsule) return;
+
+          var todayStr = getVirtualToday(state.storage.demoDayOffset);
+          var newHistory = qs.answers.map(function (a) {
+            return {
+              date: todayStr,
+              questionType: a.question.type,
+              question: a.question.question,
+              userAnswer: a.userAnswer,
+              result: a.result,
+              aiFeedback: a.feedback,
+            };
+          });
+
+          var updated = applyReviewOutcome(
+            Object.assign({}, capsule, {
+              reviewHistory: capsule.reviewHistory.concat(newHistory),
+            }),
+            todayStr,
+            overall
+          );
+
+          commitStorage(
+            Object.assign({}, state.storage, {
+              capsules: state.storage.capsules.map(function (c) {
+                return c.id === capsule.id ? updated : c;
+              }),
+            })
+          );
+
+          qs.finished = true;
+          qs.outcome = overall;
+          qs.updatedCapsule = updated;
+          render();
+        }
+
+        /* -------------------- Render Views -------------------- */
+        function renderHeader(dueCount) {
+          var navItems = [
+            { id: "home", label: "홈" + (dueCount > 0 ? " (" + dueCount + ")" : "") },
+            { id: "create", label: "캡슐 담기" },
+            { id: "archive", label: "보관함" },
+            { id: "report", label: "주간 리포트" },
+          ];
+
+          return (
+            '<header class="top-header">' +
+            '<div class="header-inner">' +
+            '<button type="button" class="brand-btn" data-action="go-tab" data-tab="home">망각 타임캡슐</button>' +
+            '<nav class="desktop-nav" aria-label="주요 메뉴">' +
+            navItems
+              .map(function (item) {
+                return (
+                  '<button type="button" class="nav-link ' +
+                  (state.activeTab === item.id ? "active" : "") +
+                  '" data-action="go-tab" data-tab="' +
+                  item.id +
+                  '">' +
+                  escapeHtml(item.label) +
+                  "</button>"
+                );
+              })
+              .join("") +
+            "</nav>" +
+            '<div class="header-actions">' +
+            '<button type="button" class="icon-btn tint" data-action="download-html" title="단일 index.html 파일 바로 내려받기">' +
+            iconSvg("download", 16) +
+            "<span>index.html 받기</span>" +
+            "</button>" +
+            '<button type="button" class="icon-btn ' +
+            (state.activeTab === "settings" ? "active" : "") +
+            '" data-action="go-tab" data-tab="settings" aria-label="설정 및 시연 도구">' +
+            iconSvg("settings", 16) +
+            "<span>설정</span>" +
+            "</button>" +
+            "</div>" +
+            "</div>" +
+            "</header>"
+          );
+        }
+
+        function renderDownloadBanner() {
+          if (!state.downloadNotice) return "";
+          var isErr = state.downloadNotice.type === "error";
+          return (
+            '<div class="demo-banner" style="background:' +
+            (isErr ? "rgba(200,75,75,0.08)" : "rgba(47,125,91,0.09)") +
+            ";border-bottom-color:" +
+            (isErr ? "rgba(200,75,75,0.28)" : "rgba(47,125,91,0.28)") +
+            ";color:" +
+            (isErr ? "#9e2f2f" : "#1f242d") +
+            '">' +
+            '<div class="header-inner" style="height:auto;padding-top:4px;padding-bottom:4px;flex-wrap:wrap">' +
+            "<span>" +
+            escapeHtml(state.downloadNotice.message) +
+            "</span>" +
+            '<div style="display:flex;align-items:center;gap:8px">' +
+            (canUseServerApi()
+              ? '<a href="/api/export-index-html" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">새 창에서 index.html 받기</a>'
+              : "") +
+            '<button type="button" class="btn btn-outline btn-sm" data-action="close-download-banner">닫기</button>' +
+            "</div>" +
+            "</div>" +
+            "</div>"
+          );
+        }
+
+        function renderHome(todayStr) {
+          var capsules = state.storage.capsules;
+          var dueList = getSortedDueCapsules(capsules, todayStr);
+          var upcomingList = getUpcomingCapsules(capsules, todayStr);
+          var masteredCount = capsules.filter(function (c) {
+            return c.isMastered;
+          }).length;
+          var sealedCount = capsules.filter(function (c) {
+            return !c.isMastered;
+          }).length;
+
+          var dueHtml = "";
+          if (dueList.length === 0) {
+            dueHtml =
+              '<div class="empty-state">' +
+              '<div class="empty-circle">' +
+              iconSvg("check", 24) +
+              "</div>" +
+              '<div><p style="margin:0;font-weight:700;font-size:16px">' +
+              (capsules.length === 0 ? "아직 담긴 타임캡슐이 없어요" : "오늘 열릴 캡슐이 없습니다") +
+              '</p><p class="muted body-text" style="margin:6px 0 0;max-width:420px">' +
+              (capsules.length === 0
+                ? "오늘 공부한 내용을 3줄로 정리해 첫 번째 타임캡슐을 봉인해보세요. (우측 상단 설정에서 샘플 데이터도 불러올 수 있어요.)"
+                : "새로운 학습 내용을 캡슐에 담아두거나, 오른쪽에서 다음 복습 일정을 확인해보세요.") +
+              "</p></div>" +
+              '<button type="button" class="btn btn-outline" data-action="go-tab" data-tab="create">' +
+              iconSvg("plus", 16) +
+              "<span>오늘 배운 3줄 담으러 가기</span></button>" +
+              "</div>";
+          } else {
+            dueHtml =
+              '<div class="divide-list">' +
+              dueList
+                .map(function (entry) {
+                  var c = entry.capsule;
+                  return (
+                    '<div class="due-item">' +
+                    '<div style="min-width:0">' +
+                    '<div class="meta-row">' +
+                    '<span class="subject-label">' +
+                    escapeHtml(c.subject) +
+                    "</span>" +
+                    "<span>·</span>" +
+                    "<span>" +
+                    escapeHtml(STAGE_LABELS[entry.effectiveStage]) +
+                    "</span>" +
+                    "<span>·</span>" +
+                    (entry.overdueDays > 0
+                      ? '<span class="overdue-label tabular-nums">' + entry.overdueDays + "일 연체</span>"
+                      : "<span>오늘 예정</span>") +
+                    "</div>" +
+                    '<h3 class="topic-title">' +
+                    escapeHtml(c.topic) +
+                    "</h3>" +
+                    (entry.adjustedForLongOverdue
+                      ? '<p class="small-text" style="margin:4px 0 0;color:var(--accent-amber-text)">14일 이상 지나 ' +
+                        escapeHtml(STAGE_LABELS[c.stage]) +
+                        "에서 한 단계 낮춰 복습합니다.</p>"
+                      : "") +
+                    "</div>" +
+                    '<button type="button" class="btn btn-amber" data-action="open-quiz" data-id="' +
+                    escapeHtml(c.id) +
+                    '"><span>캡슐 열기</span>' +
+                    iconSvg("arrowRight", 16) +
+                    "</button>" +
+                    "</div>"
+                  );
+                })
+                .join("") +
+              "</div>";
+          }
+
+          var upcomingHtml = "";
+          if (upcomingList.length === 0) {
+            upcomingHtml =
+              '<div class="meta-row" style="padding:12px 0">' +
+              iconSvg("lock", 16) +
+              "<span>대기 중인 캡슐이 없습니다.</span></div>";
+          } else {
+            upcomingHtml =
+              '<div class="divide-list">' +
+              upcomingList
+                .slice(0, 5)
+                .map(function (item) {
+                  return (
+                    '<div class="row-between" style="padding:10px 0">' +
+                    '<div style="min-width:0">' +
+                    '<div class="small-text muted">' +
+                    escapeHtml(item.capsule.subject) +
+                    " · " +
+                    escapeHtml(STAGE_LABELS[item.capsule.stage]) +
+                    "</div>" +
+                    '<div class="body-text" style="font-weight:600;margin-top:2px">' +
+                    escapeHtml(item.capsule.topic) +
+                    "</div>" +
+                    "</div>" +
+                    '<span class="mono-num small-text" style="font-weight:700;color:var(--accent-navy);display:inline-flex;align-items:center;gap:4px">' +
+                    iconSvg("clock", 14) +
+                    "D-" +
+                    item.daysLeft +
+                    "</span>" +
+                    "</div>"
+                  );
+                })
+                .join("") +
+              "</div>";
+          }
+
+          return (
+            '<div class="dashboard-grid">' +
+            '<section class="card stack-md">' +
+            '<div class="section-header">' +
+            "<div>" +
+            '<p class="small-text muted" style="margin:0">' +
+            escapeHtml(formatKoreanDate(todayStr)) +
+            " 기준</p>" +
+            '<h1 class="page-title">오늘 열 캡슐 <span class="tabular-nums" style="color:var(--accent-amber)">' +
+            dueList.length +
+            "개</span></h1>" +
+            '<p class="body-text muted" style="margin:4px 0 0">' +
+            (dueList.length > 0
+              ? "오래 밀린 캡슐부터 순서대로 꺼내어 기억을 확인해보세요."
+              : "오늘 복습해야 할 캡슐을 모두 확인했어요.") +
+            "</p>" +
+            "</div>" +
+            '<button type="button" class="btn btn-primary" data-action="go-tab" data-tab="create">' +
+            iconSvg("plus", 16) +
+            "<span>새 캡슐 담기</span></button>" +
+            "</div>" +
+            dueHtml +
+            "</section>" +
+            '<aside class="stack-lg">' +
+            '<div class="card">' +
+            '<h2 class="section-title">내 타임캡슐 현황</h2>' +
+            '<div class="stats-two">' +
+            '<div class="card-subtle">' +
+            '<div class="small-text muted">봉인 중인 캡슐</div>' +
+            '<p class="stat-value tabular-nums">' +
+            sealedCount +
+            "개</p>" +
+            "</div>" +
+            '<div class="card-subtle">' +
+            '<div class="small-text muted">장기 기억 완료</div>' +
+            '<p class="stat-value tabular-nums" style="color:var(--accent-green)">' +
+            masteredCount +
+            "개</p>" +
+            "</div>" +
+            "</div>" +
+            "</div>" +
+            '<div class="card stack-sm">' +
+            '<div class="row-between">' +
+            '<h2 class="section-title">곧 열리는 캡슐</h2>' +
+            '<button type="button" class="nav-link" style="padding:0;border:none;color:var(--accent-navy)" data-action="go-tab" data-tab="archive">전체 보기</button>' +
+            "</div>" +
+            upcomingHtml +
+            "</div>" +
+            "</aside>" +
+            "</div>"
+          );
+        }
+
+        function renderCreate(todayStr) {
+          var analysisHtml = "";
+          if (state.createAnalysis) {
+            var a = state.createAnalysis;
+            var corrHtml = "";
+            if (a.corrections && a.corrections.length > 0) {
+              corrHtml =
+                '<div class="stack-sm">' +
+                '<div class="field-label" style="color:var(--accent-amber-text)">오개념 교정 및 보완</div>' +
+                a.corrections
+                  .map(function (c) {
+                    var isSure = c.confidence === "확실";
+                    return (
+                      '<div class="correction-box">' +
+                      '<div class="row-between">' +
+                      '<span class="small-text muted">원래 정리: ' +
+                      escapeHtml(c.original) +
+                      "</span>" +
+                      '<span class="confidence-tag ' +
+                      (isSure ? "confidence-sure" : "confidence-check") +
+                      '">' +
+                      escapeHtml(c.confidence || "교과서 확인 권장") +
+                      "</span>" +
+                      "</div>" +
+                      '<div style="font-weight:600">보완 내용: ' +
+                      escapeHtml(c.corrected) +
+                      "</div>" +
+                      '<div class="small-text muted">이유: ' +
+                      escapeHtml(c.reason) +
+                      "</div>" +
+                      "</div>"
+                    );
+                  })
+                  .join("") +
+                "</div>";
+            } else {
+              corrHtml =
+                '<div class="alert alert-success"><span>틀리거나 왜곡된 개념 없이 핵심 내용을 정확하게 정리했습니다.</span></div>';
+            }
+
+            analysisHtml =
+              '<section class="card stack-md" style="border-color:rgba(43,76,126,0.35)">' +
+              '<div class="row-between">' +
+              '<h2 class="section-title">AI 개념 분석 결과</h2>' +
+              '<span class="small-text muted">' +
+              (a.mode === "local" ? "오프라인 기본 분석" : "Gemini AI 분석") +
+              "</span>" +
+              "</div>" +
+              "<div>" +
+              '<div class="field-label">핵심 개념</div>' +
+              '<ul class="analysis-list">' +
+              (a.keyConcepts || [])
+                .map(function (k) {
+                  return "<li>" + escapeHtml(k) + "</li>";
+                })
+                .join("") +
+              "</ul>" +
+              "</div>" +
+              "<div>" +
+              '<div class="field-label">헷갈리기 쉬운 부분</div>' +
+              '<ul class="analysis-list">' +
+              (a.confusingPoints || [])
+                .map(function (p) {
+                  return "<li>" + escapeHtml(p) + "</li>";
+                })
+                .join("") +
+              "</ul>" +
+              "</div>" +
+              corrHtml +
+              '<div class="row-actions">' +
+              '<button type="button" class="btn btn-green" style="flex:1" data-action="seal-capsule">' +
+              iconSvg("lock", 16) +
+              "<span>분석 결과와 함께 캡슐 봉인하기 (첫 복습: " +
+              escapeHtml(addDays(todayStr, 1)) +
+              ")</span></button>" +
+              "</div>" +
+              "</section>";
+          }
+
+          return (
+            '<div style="max-width:768px;margin:0 auto" class="stack-lg">' +
+            "<div>" +
+            '<h1 class="page-title">오늘 배운 3줄 캡슐 담기</h1>' +
+            '<p class="body-text muted" style="margin:6px 0 0">오늘 공부한 핵심을 내 말로 3줄 정리하면 AI가 오개념을 점검하고 1·3·7·30일 뒤 복습을 예약해 줍니다.</p>' +
+            "</div>" +
+            (state.createError
+              ? '<div class="alert alert-error"><div><strong>분석에 실패했습니다:</strong> ' +
+                escapeHtml(state.createError) +
+                '</div><button type="button" class="btn btn-outline btn-sm" data-action="analyze-capsule">다시 시도</button></div>'
+              : "") +
+            '<section class="card stack-md">' +
+            '<div class="field-group">' +
+            '<label class="field-label">과목 선택</label>' +
+            '<div class="subject-grid">' +
+            SUBJECTS.map(function (subj) {
+              return (
+                '<button type="button" class="subject-btn ' +
+                (state.createSubject === subj ? "selected" : "") +
+                '" data-action="select-create-subject" data-subject="' +
+                escapeHtml(subj) +
+                '">' +
+                escapeHtml(subj) +
+                "</button>"
+              );
+            }).join("") +
+            "</div>" +
+            "</div>" +
+            '<div class="field-group">' +
+            '<label class="field-label" for="create-topic">단원 / 주제 제목</label>' +
+            '<input id="create-topic" class="input" type="text" placeholder="예: 이온 결합과 공유 결합의 차이" value="' +
+            escapeHtml(state.createTopic) +
+            '" data-bind="create-topic" />' +
+            "</div>" +
+            [0, 1, 2]
+              .map(function (idx) {
+                return (
+                  '<div class="field-group">' +
+                  '<label class="field-label" for="create-line-' +
+                  idx +
+                  '">' +
+                  (idx + 1) +
+                  "번째 줄</label>" +
+                  '<textarea id="create-line-' +
+                  idx +
+                  '" class="textarea" placeholder="배운 핵심 내용 ' +
+                  (idx + 1) +
+                  '번째 줄을 적어보세요" data-bind="create-line" data-idx="' +
+                  idx +
+                  '">' +
+                  escapeHtml(state.createLines[idx]) +
+                  "</textarea>" +
+                  "</div>"
+                );
+              })
+              .join("") +
+            '<div class="row-actions">' +
+            '<button type="button" class="btn btn-primary" style="flex:1" ' +
+            (state.createLoading ? "disabled" : "") +
+            ' data-action="analyze-capsule">' +
+            (state.createLoading ? iconSvg("loader", 16) : iconSvg("sparkles", 16)) +
+            "<span>" +
+            (state.createLoading ? "AI가 개념과 오개념을 분석하는 중..." : "AI로 분석하고 검사받기") +
+            "</span></button>" +
+            '<button type="button" class="btn btn-outline" data-action="go-tab" data-tab="home">취소</button>' +
+            "</div>" +
+            '<p class="small-text muted" style="margin:0;text-align:center">입력한 내용은 AI 분석을 위해 Gemini로 전송됩니다. 개인정보는 입력하지 마세요.</p>' +
+            "</section>" +
+            analysisHtml +
+            "</div>"
+          );
+        }
+
+        function renderArchive(todayStr) {
+          var capsules = state.storage.capsules;
+          var filtered = capsules.filter(function (c) {
+            if (state.archiveFilter === "sealed" && c.isMastered) return false;
+            if (state.archiveFilter === "mastered" && !c.isMastered) return false;
+            if (state.archiveFilter === "due" && (c.isMastered || diffDays(c.nextReviewDate, todayStr) < 0)) return false;
+            if (state.archiveSubject !== "전체" && c.subject !== state.archiveSubject) return false;
+            if (state.archiveSearch.trim()) {
+              var q = state.archiveSearch.trim().toLowerCase();
+              var hay = (c.topic + " " + c.lines.join(" ")).toLowerCase();
+              if (hay.indexOf(q) === -1) return false;
+            }
+            return true;
+          });
+
+          var filterBtns = [
+            { id: "all", label: "전체 (" + capsules.length + ")" },
+            {
+              id: "due",
+              label:
+                "오늘 열림 (" +
+                capsules.filter(function (c) {
+                  return !c.isMastered && diffDays(c.nextReviewDate, todayStr) >= 0;
+                }).length +
+                ")",
+            },
+            {
+              id: "sealed",
+              label:
+                "봉인 중 (" +
+                capsules.filter(function (c) {
+                  return !c.isMastered;
+                }).length +
+                ")",
+            },
+            {
+              id: "mastered",
+              label:
+                "장기 기억 완료 (" +
+                capsules.filter(function (c) {
+                  return c.isMastered;
+                }).length +
+                ")",
+            },
+          ];
+
+          var listHtml = "";
+          if (filtered.length === 0) {
+            listHtml =
+              '<div class="card empty-state"><p class="muted body-text" style="margin:0">조건에 맞는 캡슐이 없습니다.</p></div>';
+          } else {
+            listHtml =
+              '<div class="stack-md">' +
+              filtered
+                .map(function (c) {
+                  var isOpen = Boolean(state.expandedCapsuleIds[c.id]);
+                  var overdue = !c.isMastered ? diffDays(c.nextReviewDate, todayStr) : 0;
+                  var statusText = c.isMastered
+                    ? '<span class="mastered-label">장기 기억 완료</span>'
+                    : overdue >= 0
+                    ? '<span class="overdue-label">' + (overdue === 0 ? "오늘 복습" : overdue + "일 연체") + "</span>"
+                    : '<span class="mono-num">D-' + Math.abs(overdue) + " (" + escapeHtml(c.nextReviewDate) + ")</span>";
+
+                  var detailHtml = "";
+                  if (isOpen) {
+                    detailHtml =
+                      '<div style="padding-top:14px;border-top:1px solid var(--border-color)" class="stack-md">' +
+                      '<div class="card-subtle stack-sm">' +
+                      '<div class="field-label">내가 정리한 3줄</div>' +
+                      c.lines
+                        .map(function (l, i) {
+                          return '<div class="body-text">' + (i + 1) + ". " + escapeHtml(l) + "</div>";
+                        })
+                        .join("") +
+                      "</div>" +
+                      '<div><div class="field-label">AI 핵심 개념</div><ul class="analysis-list">' +
+                      ((c.aiAnalysis && c.aiAnalysis.keyConcepts) || [])
+                        .map(function (k) {
+                          return "<li>" + escapeHtml(k) + "</li>";
+                        })
+                        .join("") +
+                      "</ul></div>" +
+                      (c.aiAnalysis && c.aiAnalysis.corrections && c.aiAnalysis.corrections.length > 0
+                        ? '<div class="stack-sm"><div class="field-label" style="color:var(--accent-amber-text)">교정 내역</div>' +
+                          c.aiAnalysis.corrections
+                            .map(function (cor) {
+                              return (
+                                '<div class="correction-box"><strong>' +
+                                escapeHtml(cor.confidence || "교과서 확인 권장") +
+                                "</strong><span>" +
+                                escapeHtml(cor.corrected) +
+                                "</span></div>"
+                              );
+                            })
+                            .join("") +
+                          "</div>"
+                        : "") +
+                      (c.reviewHistory && c.reviewHistory.length > 0
+                        ? '<div class="stack-sm"><div class="field-label">복습 기록 (' +
+                          c.reviewHistory.length +
+                          "회)</div>" +
+                          c.reviewHistory
+                            .slice(-4)
+                            .reverse()
+                            .map(function (h) {
+                              return (
+                                '<div class="small-text muted">' +
+                                escapeHtml(h.date) +
+                                " · " +
+                                escapeHtml(QUESTION_TYPE_LABELS[h.questionType] || h.questionType) +
+                                " · <strong>" +
+                                escapeHtml(RESULT_LABELS[h.result] || h.result) +
+                                "</strong></div>"
+                              );
+                            })
+                            .join("") +
+                          "</div>"
+                        : "") +
+                      '<div class="row-between">' +
+                      '<button type="button" class="btn btn-amber btn-sm" data-action="open-quiz" data-id="' +
+                      escapeHtml(c.id) +
+                      '"><span>지금 퀴즈로 복습하기</span></button>' +
+                      (state.confirmDeleteId === c.id
+                        ? '<div style="display:flex;align-items:center;gap:6px"><span class="small-text" style="color:var(--accent-red)">삭제할까요?</span><button type="button" class="btn btn-outline btn-sm" data-action="cancel-delete">취소</button><button type="button" class="btn btn-danger btn-sm" data-action="confirm-delete" data-id="' +
+                          escapeHtml(c.id) +
+                          '">삭제</button></div>'
+                        : '<button type="button" class="btn btn-danger-outline btn-sm" data-action="ask-delete" data-id="' +
+                          escapeHtml(c.id) +
+                          '">' +
+                          iconSvg("trash", 14) +
+                          "<span>삭제</span></button>") +
+                      "</div>" +
+                      "</div>";
+                  }
+
+                  return (
+                    '<article class="card stack-sm">' +
+                    '<div class="row-between">' +
+                    '<div style="min-width:0">' +
+                    '<div class="meta-row"><span class="subject-label">' +
+                    escapeHtml(c.subject) +
+                    "</span><span>·</span><span>" +
+                    escapeHtml(STAGE_LABELS[c.stage]) +
+                    "</span><span>·</span>" +
+                    statusText +
+                    "</div>" +
+                    '<h3 class="topic-title">' +
+                    escapeHtml(c.topic) +
+                    "</h3>" +
+                    "</div>" +
+                    '<button type="button" class="btn btn-outline btn-sm" data-action="toggle-expand" data-id="' +
+                    escapeHtml(c.id) +
+                    '">' +
+                    (isOpen ? "접기" : "자세히 보기") +
+                    "</button>" +
+                    "</div>" +
+                    detailHtml +
+                    "</article>"
+                  );
+                })
+                .join("") +
+              "</div>";
+          }
+
+          return (
+            '<div class="stack-lg">' +
+            "<div>" +
+            '<h1 class="page-title">캡슐 보관함</h1>' +
+            '<p class="body-text muted" style="margin:4px 0 0">지금까지 봉인한 모든 학습 캡슐과 복습 이력을 확인하세요.</p>' +
+            "</div>" +
+            '<section class="card stack-md">' +
+            '<div class="filter-tabs">' +
+            filterBtns
+              .map(function (b) {
+                return (
+                  '<button type="button" class="filter-tab ' +
+                  (state.archiveFilter === b.id ? "active" : "") +
+                  '" data-action="set-archive-filter" data-filter="' +
+                  b.id +
+                  '">' +
+                  escapeHtml(b.label) +
+                  "</button>"
+                );
+              })
+              .join("") +
+            "</div>" +
+            '<div class="row-actions">' +
+            '<select class="select" style="max-width:180px" data-bind="archive-subject">' +
+            ["전체"].concat(SUBJECTS)
+              .map(function (s) {
+                return (
+                  '<option value="' +
+                  escapeHtml(s) +
+                  '" ' +
+                  (state.archiveSubject === s ? "selected" : "") +
+                  ">" +
+                  escapeHtml(s === "전체" ? "전체 과목" : s) +
+                  "</option>"
+                );
+              })
+              .join("") +
+            "</select>" +
+            '<input class="input" type="search" placeholder="주제나 내용으로 검색..." value="' +
+            escapeHtml(state.archiveSearch) +
+            '" data-bind="archive-search" />' +
+            "</div>" +
+            "</section>" +
+            listHtml +
+            "</div>"
+          );
+        }
+
+        function renderReport(todayStr) {
+          var capsules = state.storage.capsules;
+          var weekAgo = addDays(todayStr, -7);
+          var recent = [];
+          var subjCounts = {};
+
+          capsules.forEach(function (c) {
+            c.reviewHistory.forEach(function (h) {
+              if (diffDays(weekAgo, h.date) >= 0) {
+                recent.push({ subject: c.subject, h: h });
+                if (!subjCounts[c.subject]) subjCounts[c.subject] = { total: 0, correct: 0 };
+                subjCounts[c.subject].total += 1;
+                if (h.result === "correct") subjCounts[c.subject].correct += 1;
+              }
+            });
+          });
+
+          var totalReviews = recent.length;
+          var correctReviews = recent.filter(function (r) {
+            return r.h.result === "correct";
+          }).length;
+          var rate = totalReviews > 0 ? Math.round((correctReviews / totalReviews) * 100) : 0;
+
+          var cached = state.storage.weeklyReport;
+          var aiReportHtml = "";
+          if (cached) {
+            aiReportHtml =
+              '<section class="card stack-md" style="border-color:rgba(43,76,126,0.3)">' +
+              '<div class="row-between">' +
+              '<h2 class="section-title">AI 학습 패턴 분석 리포트</h2>' +
+              '<span class="small-text muted mono-num">' +
+              escapeHtml(cached.generatedAt) +
+              " 생성</span>" +
+              "</div>" +
+              '<div class="stats-two">' +
+              '<div class="card-subtle"><div class="small-text muted">가장 자주 잊는 과목</div><div style="font-weight:700;margin-top:4px;color:var(--accent-amber-text)">' +
+              escapeHtml(cached.weakestSubject) +
+              "</div></div>" +
+              '<div class="card-subtle"><div class="small-text muted">취약한 문제 유형</div><div style="font-weight:700;margin-top:4px;color:var(--accent-navy)">' +
+              escapeHtml(cached.weakestQuestionType) +
+              "</div></div>" +
+              "</div>" +
+              '<p class="body-text" style="margin:0;line-height:1.6">' +
+              escapeHtml(cached.patternSummary) +
+              "</p>" +
+              '<div><div class="field-label">맞춤 복습 전략</div><ul class="analysis-list">' +
+              (cached.recommendations || [])
+                .map(function (r) {
+                  return "<li>" + escapeHtml(r) + "</li>";
+                })
+                .join("") +
+              "</ul></div>" +
+              "</section>";
+          }
+
+          return (
+            '<div style="max-width:840px;margin:0 auto" class="stack-lg">' +
+            '<div class="row-between">' +
+            "<div>" +
+            '<h1 class="page-title">주간 학습 리포트</h1>' +
+            '<p class="body-text muted" style="margin:4px 0 0">최근 7일간의 복습 데이터를 바탕으로 자주 잊는 과목과 유형을 분석합니다.</p>' +
+            "</div>" +
+            '<button type="button" class="btn btn-primary" ' +
+            (state.reportLoading ? "disabled" : "") +
+            ' data-action="generate-report">' +
+            (state.reportLoading ? iconSvg("loader", 16) : iconSvg("sparkles", 16)) +
+            "<span>" +
+            (state.reportLoading ? "분석 중..." : "AI 리포트 생성하기") +
+            "</span></button>" +
+            "</div>" +
+            (state.reportError
+              ? '<div class="alert alert-error"><span>' +
+                escapeHtml(state.reportError) +
+                '</span><button type="button" class="btn btn-outline btn-sm" data-action="generate-report">다시 시도</button></div>'
+              : "") +
+            '<section class="card stack-md">' +
+            '<h2 class="section-title">최근 7일 복습 요약</h2>' +
+            '<div class="stats-two">' +
+            '<div class="card-subtle"><div class="small-text muted">최근 7일 복습 횟수</div><p class="stat-value tabular-nums">' +
+            totalReviews +
+            "회</p></div>" +
+            '<div class="card-subtle"><div class="small-text muted">완전 정답 비율</div><p class="stat-value tabular-nums" style="color:var(--accent-green)">' +
+            rate +
+            "%</p></div>" +
+            "</div>" +
+            (Object.keys(subjCounts).length > 0
+              ? '<div class="stack-sm">' +
+                Object.keys(subjCounts)
+                  .map(function (subj) {
+                    var sc = subjCounts[subj];
+                    var pct = Math.round((sc.correct / sc.total) * 100);
+                    return (
+                      '<div class="stack-sm" style="gap:4px">' +
+                      '<div class="row-between small-text"><strong>' +
+                      escapeHtml(subj) +
+                      '</strong><span class="mono-num muted">' +
+                      sc.correct +
+                      "/" +
+                      sc.total +
+                      " 정답 (" +
+                      pct +
+                      "%)</span></div>" +
+                      '<div class="progress-bar-track"><div class="progress-bar-fill" style="width:' +
+                      pct +
+                      '%"></div></div>' +
+                      "</div>"
+                    );
+                  })
+                  .join("") +
+                "</div>"
+              : '<p class="small-text muted" style="margin:0">아직 최근 7일간의 퀴즈 복습 기록이 없습니다.</p>') +
+            "</section>" +
+            aiReportHtml +
+            "</div>"
+          );
+        }
+
+        function renderSettings(todayStr) {
+          var s = state.storage;
+          return (
+            '<div style="max-width:768px;margin:0 auto" class="stack-lg">' +
+            "<div>" +
+            '<h1 class="page-title">설정 및 시연 도구</h1>' +
+            '<p class="body-text muted" style="margin:4px 0 0">데이터 백업, 시연용 날짜 이동, 그리고 단일 index.html 파일 배포를 관리할 수 있습니다.</p>' +
+            "</div>" +
+            (state.settingsNotice
+              ? '<div class="alert ' +
+                (state.settingsNotice.type === "success" ? "alert-success" : "alert-error") +
+                '"><span>' +
+                escapeHtml(state.settingsNotice.text) +
+                "</span></div>"
+              : "") +
+            '<section class="card stack-md">' +
+            '<div style="padding-bottom:14px;border-bottom:1px solid var(--border-color)">' +
+            '<h2 class="section-title">시연용 데모 모드</h2>' +
+            '<p class="small-text muted" style="margin:4px 0 0">수행평가 발표 시 며칠을 기다리지 않고 1·3·7일 뒤 복습 흐름을 바로 시연할 수 있습니다.</p>' +
+            "</div>" +
+            '<div class="stack-sm">' +
+            '<div class="row-between">' +
+            '<div><div style="font-size:14px;font-weight:600">오늘 날짜 앞당기기</div><div class="small-text muted mono-num">현재 기준 날짜: ' +
+            escapeHtml(formatKoreanDate(todayStr)) +
+            (s.demoDayOffset !== 0 ? " (+" + s.demoDayOffset + "일 이동됨)" : " (실제 오늘)") +
+            "</div></div>" +
+            (s.demoDayOffset !== 0
+              ? '<button type="button" class="btn btn-outline btn-sm" data-action="reset-demo-date">' +
+                iconSvg("rotate", 14) +
+                "<span>실제 오늘로 되돌리기</span></button>"
+              : "") +
+            "</div>" +
+            '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">' +
+            [1, 3, 7]
+              .map(function (days) {
+                return (
+                  '<button type="button" class="btn btn-outline" style="color:var(--accent-navy)" data-action="shift-days" data-days="' +
+                  days +
+                  '">' +
+                  iconSvg("calendarPlus", 16) +
+                  '<span class="tabular-nums">+' +
+                  days +
+                  "일</span></button>"
+                );
+              })
+              .join("") +
+            "</div>" +
+            "</div>" +
+            '<div style="padding-top:14px;border-top:1px solid var(--border-color)" class="stack-sm">' +
+            '<div class="row-actions">' +
+            '<button type="button" class="btn btn-primary" style="flex:1" data-action="load-sample">' +
+            iconSvg("database", 16) +
+            "<span>샘플 데이터 불러오기</span></button>" +
+            (state.confirmResetAll
+              ? '<div style="display:flex;align-items:center;gap:8px"><button type="button" class="btn btn-outline btn-sm" data-action="cancel-reset-all">취소</button><button type="button" class="btn btn-danger btn-sm" data-action="confirm-reset-all">전체 초기화</button></div>'
+              : '<button type="button" class="btn btn-danger-outline" data-action="ask-reset-all">' +
+                iconSvg("trash", 16) +
+                "<span>모든 데이터 초기화</span></button>") +
+            "</div>" +
+            '<p class="small-text muted" style="margin:0">현재 저장된 캡슐: <strong class="tabular-nums">' +
+            s.capsules.length +
+            "개</strong></p>" +
+            "</div>" +
+            "</section>" +
+            '<section class="card stack-md">' +
+            '<div style="padding-bottom:14px;border-bottom:1px solid var(--border-color)">' +
+            '<h2 class="section-title">데이터 백업 (JSON)</h2>' +
+            '<p class="small-text muted" style="margin:4px 0 0">브라우저 localStorage 데이터를 JSON 파일로 내보내거나 복원할 수 있습니다.</p>' +
+            "</div>" +
+            '<div class="row-actions">' +
+            '<button type="button" class="btn btn-outline" style="flex:1" data-action="export-json">' +
+            iconSvg("download", 16) +
+            "<span>JSON 파일 내보내기</span></button>" +
+            '<button type="button" class="btn btn-outline" style="flex:1" data-action="trigger-import-json">' +
+            iconSvg("upload", 16) +
+            "<span>JSON 파일 불러오기</span></button>" +
+            '<input id="import-json-input" type="file" accept=".json,application/json" style="display:none" />' +
+            "</div>" +
+            "</section>" +
+            '<section class="card stack-md">' +
+            '<div style="padding-bottom:14px;border-bottom:1px solid var(--border-color)">' +
+            '<h2 class="section-title">단일 index.html 배포 / 오프라인 실행</h2>' +
+            '<p class="small-text muted" style="margin:4px 0 0">프레임워크(React/Vite)나 package.json·npm 빌드 없이 이 <strong>index.html 파일 하나</strong>만으로 브라우저 더블클릭 실행 및 GitHub → Vercel 즉시 배포가 가능합니다.</p>' +
+            "</div>" +
+            '<div class="row-actions">' +
+            '<button type="button" class="btn btn-primary" style="flex:1" data-action="download-html">' +
+            iconSvg("fileCode", 16) +
+            "<span>index.html 단일 파일 다운로드</span></button>" +
+            (canUseServerApi()
+              ? '<a href="/api/export-index-html" target="_blank" rel="noopener noreferrer" class="btn btn-outline">새 창에서 index.html 받기</a>'
+              : "") +
+            "</div>" +
+            '<div class="card-subtle small-text muted" style="line-height:1.6">' +
+            "1. 내려받은 <strong>index.html</strong>을 내 컴퓨터에서 더블 클릭하면 인터넷이나 서버 없이도 바로 실행됩니다.<br/>" +
+            "2. GitHub 저장소에 <strong>index.html 파일 1개만</strong> 업로드한 뒤 Vercel에서 Import하면 별도 빌드 설정 없이 즉시 배포됩니다." +
+            "</div>" +
+            "</section>" +
+            "</div>"
+          );
+        }
+
+        function renderQuizModal() {
+          var qs = state.quizState;
+          if (!state.reviewingCapsuleId || !qs) return "";
+          var capsule = state.storage.capsules.find(function (c) {
+            return c.id === state.reviewingCapsuleId;
+          });
+          if (!capsule) return "";
+
+          var body = "";
+          if (qs.loading) {
+            body =
+              '<div class="empty-state">' +
+              iconSvg("loader", 28) +
+              '<p class="body-text" style="margin:0">AI가 맞춤형 복습 퀴즈를 출제하고 있습니다...</p>' +
+              "</div>";
+          } else if (qs.error) {
+            body =
+              '<div class="alert alert-error"><span>' +
+              escapeHtml(qs.error) +
+              '</span></div><div class="row-actions"><button type="button" class="btn btn-primary" data-action="retry-quiz">다시 시도</button><button type="button" class="btn btn-outline" data-action="close-quiz">닫기</button></div>';
+          } else if (qs.finished) {
+            var nextInfo = qs.updatedCapsule.isMastered
+              ? "장기 기억 완료 단계에 도달했습니다!"
+              : "다음 복습 예정일: " + qs.updatedCapsule.nextReviewDate + " (" + STAGE_LABELS[qs.updatedCapsule.stage] + ")";
+
+            body =
+              '<div class="stack-md">' +
+              '<div class="alert ' +
+              (qs.outcome === "correct" ? "alert-success" : qs.outcome === "partial" ? "alert-warn" : "alert-error") +
+              '"><div><strong>이번 복습 결과: ' +
+              escapeHtml(RESULT_LABELS[qs.outcome]) +
+              '</strong><div style="margin-top:4px">' +
+              escapeHtml(nextInfo) +
+              "</div></div></div>" +
+              '<div class="stack-sm">' +
+              qs.answers
+                .map(function (a, idx) {
+                  return (
+                    '<div class="card-subtle stack-sm">' +
+                    '<div class="row-between small-text"><strong>문제 ' +
+                    (idx + 1) +
+                    " · " +
+                    escapeHtml(QUESTION_TYPE_LABELS[a.question.type] || a.question.type) +
+                    '</strong><strong style="color:' +
+                    (a.result === "correct"
+                      ? "var(--accent-green)"
+                      : a.result === "partial"
+                      ? "var(--accent-amber-text)"
+                      : "var(--accent-red)") +
+                    '">' +
+                    escapeHtml(RESULT_LABELS[a.result]) +
+                    "</strong></div>" +
+                    '<div class="body-text">' +
+                    escapeHtml(a.question.question) +
+                    "</div>" +
+                    '<div class="small-text muted">내 답: ' +
+                    escapeHtml(a.userAnswer) +
+                    "</div>" +
+                    '<div class="small-text" style="color:var(--accent-navy)">피드백: ' +
+                    escapeHtml(a.feedback) +
+                    "</div>" +
+                    "</div>"
+                  );
+                })
+                .join("") +
+              "</div>" +
+              '<button type="button" class="btn btn-primary full-width" data-action="close-quiz">확인하고 돌아가기</button>' +
+              "</div>";
+          } else {
+            var q = qs.questions[qs.currentIndex];
+            var inputArea = "";
+            if (q.type === "multiple_choice") {
+              inputArea =
+                '<div class="stack-sm">' +
+                (q.options || [])
+                  .map(function (opt, idx) {
+                    return (
+                      '<button type="button" class="choice-option ' +
+                      (qs.selectedOption === idx ? "selected" : "") +
+                      '" data-action="select-quiz-option" data-idx="' +
+                      idx +
+                      '">' +
+                      '<span class="mono-num" style="font-weight:700">' +
+                      (idx + 1) +
+                      ".</span><span>" +
+                      escapeHtml(opt) +
+                      "</span></button>"
+                    );
+                  })
+                  .join("") +
+                "</div>";
+            } else {
+              inputArea =
+                '<textarea id="quiz-text-answer" class="textarea" placeholder="' +
+                (q.type === "fill_blank" ? "빈칸에 들어갈 핵심 용어를 입력하세요" : "핵심 의미가 드러나게 한 줄로 적어보세요") +
+                '" data-bind="quiz-text">' +
+                escapeHtml(qs.textAnswer) +
+                "</textarea>";
+            }
+
+            body =
+              '<div class="stack-md">' +
+              '<div class="row-between small-text muted">' +
+              "<span>" +
+              escapeHtml(QUESTION_TYPE_LABELS[q.type] || q.type) +
+              "</span>" +
+              '<span class="mono-num">' +
+              (qs.currentIndex + 1) +
+              " / " +
+              qs.questions.length +
+              "</span>" +
+              "</div>" +
+              '<p style="margin:0;font-size:16px;font-weight:600;white-space:pre-line">' +
+              escapeHtml(q.question) +
+              "</p>" +
+              inputArea +
+              (qs.gradeError ? '<div class="alert alert-error"><span>' + escapeHtml(qs.gradeError) + "</span></div>" : "") +
+              '<button type="button" class="btn btn-primary full-width" ' +
+              (qs.grading ? "disabled" : "") +
+              ' data-action="submit-quiz-answer">' +
+              (qs.grading ? iconSvg("loader", 16) : iconSvg("check", 16)) +
+              "<span>" +
+              (qs.grading
+                ? "AI가 답안을 채점하는 중..."
+                : qs.currentIndex + 1 < qs.questions.length
+                ? "답안 제출하고 다음 문제로"
+                : "제출하고 복습 결과 보기") +
+              "</span></button>" +
+              "</div>";
+          }
+
+          return (
+            '<div class="modal-backdrop" role="dialog" aria-modal="true">' +
+            '<div class="modal-panel">' +
+            '<div class="row-between" style="padding-bottom:12px;border-bottom:1px solid var(--border-color)">' +
+            '<div><div class="small-text subject-label">' +
+            escapeHtml(capsule.subject) +
+            '</div><h2 class="section-title" style="margin-top:2px">' +
+            escapeHtml(capsule.topic) +
+            "</h2></div>" +
+            '<button type="button" class="icon-btn" data-action="close-quiz" aria-label="닫기">' +
+            iconSvg("x", 16) +
+            "</button>" +
+            "</div>" +
+            body +
+            "</div>" +
+            "</div>"
+          );
+        }
+
+        function renderMobileNav(dueCount) {
+          var tabs = [
+            { id: "home", label: "홈" + (dueCount > 0 ? " (" + dueCount + ")" : ""), icon: "home" },
+            { id: "create", label: "담기", icon: "plus" },
+            { id: "archive", label: "보관함", icon: "archive" },
+            { id: "report", label: "리포트", icon: "chart" },
+          ];
+          return (
+            '<nav class="mobile-nav" aria-label="모바일 하단 메뉴">' +
+            tabs
+              .map(function (t) {
+                return (
+                  '<button type="button" class="mobile-nav-btn ' +
+                  (state.activeTab === t.id ? "active" : "") +
+                  '" data-action="go-tab" data-tab="' +
+                  t.id +
+                  '">' +
+                  iconSvg(t.icon, 20) +
+                  "<span>" +
+                  escapeHtml(t.label) +
+                  "</span></button>"
+                );
+              })
+              .join("") +
+            "</nav>"
+          );
+        }
+
+        function render() {
+          var appEl = document.getElementById("app");
+          if (!appEl) return;
+
+          var todayStr = getVirtualToday(state.storage.demoDayOffset);
+          var dueCount = getSortedDueCapsules(state.storage.capsules, todayStr).length;
+
+          var demoBanner =
+            state.storage.demoDayOffset !== 0
+              ? '<div class="demo-banner">시연용 날짜 이동 적용 중 · 현재 기준일 <strong class="mono-num">' +
+                escapeHtml(formatKoreanDate(todayStr)) +
+                "</strong> (+" +
+                state.storage.demoDayOffset +
+                '일)<button type="button" class="demo-reset-link" data-action="reset-demo-date">원래 날짜로</button></div>'
+              : "";
+
+          var pageHtml = "";
+          if (state.activeTab === "home") pageHtml = renderHome(todayStr);
+          else if (state.activeTab === "create") pageHtml = renderCreate(todayStr);
+          else if (state.activeTab === "archive") pageHtml = renderArchive(todayStr);
+          else if (state.activeTab === "report") pageHtml = renderReport(todayStr);
+          else if (state.activeTab === "settings") pageHtml = renderSettings(todayStr);
+
+          appEl.innerHTML =
+            renderHeader(dueCount) +
+            renderDownloadBanner() +
+            demoBanner +
+            '<main class="main-content">' +
+            pageHtml +
+            "</main>" +
+            renderMobileNav(dueCount) +
+            renderQuizModal();
+        }
+
+        /* -------------------- Event Delegation -------------------- */
+        document.addEventListener("click", function (e) {
+          var btn = e.target.closest("[data-action]");
+          if (!btn) return;
+          var action = btn.getAttribute("data-action");
+          var todayStr = getVirtualToday(state.storage.demoDayOffset);
+
+          if (action === "go-tab") {
+            state.activeTab = btn.getAttribute("data-tab") || "home";
+            render();
+          } else if (action === "download-html") {
+            downloadCleanIndexHtml();
+          } else if (action === "close-download-banner") {
+            state.downloadNotice = null;
+            render();
+          } else if (action === "select-create-subject") {
+            state.createSubject = btn.getAttribute("data-subject") || "정보";
+            render();
+          } else if (action === "analyze-capsule") {
+            if (state.createLoading) return;
+            var topic = state.createTopic.trim();
+            var lines = state.createLines.map(function (l) {
+              return l.trim();
+            });
+            if (!topic) {
+              state.createError = "단원 또는 주제 제목을 입력해 주세요.";
+              render();
+              return;
+            }
+            if (!lines[0] || !lines[1] || !lines[2] || lines.join("").length < 10) {
+              state.createError = "오늘 배운 내용 3줄을 모두 조금 더 자세히 작성해 주세요. (총 10자 이상)";
+              render();
+              return;
+            }
+            state.createLoading = true;
+            state.createError = null;
+            render();
+
+            requestAnalysis(state.createSubject, topic, lines)
+              .then(function (result) {
+                state.createLoading = false;
+                state.createAnalysis = result;
+                render();
+              })
+              .catch(function (err) {
+                state.createLoading = false;
+                state.createError = err && err.message ? err.message : "AI 분석을 완료하지 못했습니다.";
+                render();
+              });
+          } else if (action === "seal-capsule") {
+            if (!state.createAnalysis) return;
+            var newCapsule = {
+              id: "cap_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+              subject: state.createSubject,
+              topic: state.createTopic.trim(),
+              lines: state.createLines.map(function (l) {
+                return l.trim();
+              }),
+              aiAnalysis: state.createAnalysis,
+              stage: 0,
+              nextReviewDate: addDays(todayStr, 1),
+              isMastered: false,
+              createdAt: todayStr,
+              reviewHistory: [],
+            };
+            commitStorage(
+              Object.assign({}, state.storage, {
+                capsules: [newCapsule].concat(state.storage.capsules),
+              })
+            );
+            state.createTopic = "";
+            state.createLines = ["", "", ""];
+            state.createAnalysis = null;
+            state.createError = null;
+            state.activeTab = "home";
+            render();
+          } else if (action === "open-quiz") {
+            startQuiz(btn.getAttribute("data-id"));
+          } else if (action === "retry-quiz") {
+            if (state.reviewingCapsuleId) startQuiz(state.reviewingCapsuleId);
+          } else if (action === "close-quiz") {
+            state.reviewingCapsuleId = null;
+            state.quizState = null;
+            render();
+          } else if (action === "select-quiz-option") {
+            if (state.quizState) {
+              state.quizState.selectedOption = Number(btn.getAttribute("data-idx"));
+              state.quizState.gradeError = null;
+              render();
+            }
+          } else if (action === "submit-quiz-answer") {
+            submitCurrentQuestion();
+          } else if (action === "set-archive-filter") {
+            state.archiveFilter = btn.getAttribute("data-filter") || "all";
+            render();
+          } else if (action === "toggle-expand") {
+            var id = btn.getAttribute("data-id");
+            state.expandedCapsuleIds[id] = !state.expandedCapsuleIds[id];
+            render();
+          } else if (action === "ask-delete") {
+            state.confirmDeleteId = btn.getAttribute("data-id");
+            render();
+          } else if (action === "cancel-delete") {
+            state.confirmDeleteId = null;
+            render();
+          } else if (action === "confirm-delete") {
+            var delId = btn.getAttribute("data-id");
+            commitStorage(
+              Object.assign({}, state.storage, {
+                capsules: state.storage.capsules.filter(function (c) {
+                  return c.id !== delId;
+                }),
+              })
+            );
+            state.confirmDeleteId = null;
+            render();
+          } else if (action === "generate-report") {
+            if (state.reportLoading) return;
+            state.reportLoading = true;
+            state.reportError = null;
+            render();
+
+            requestWeeklyReport(state.storage.capsules, todayStr)
+              .then(function (rep) {
+                state.reportLoading = false;
+                commitStorage(
+                  Object.assign({}, state.storage, {
+                    weeklyReport: Object.assign({}, rep, { generatedAt: todayStr }),
+                  })
+                );
+                render();
+              })
+              .catch(function (err) {
+                state.reportLoading = false;
+                state.reportError = err && err.message ? err.message : "리포트 생성 중 오류가 발생했습니다.";
+                render();
+              });
+          } else if (action === "shift-days") {
+            var delta = Number(btn.getAttribute("data-days")) || 0;
+            commitStorage(
+              Object.assign({}, state.storage, {
+                demoDayOffset: state.storage.demoDayOffset + delta,
+              })
+            );
+            state.settingsNotice = {
+              type: "success",
+              text: "기준 날짜를 +" + delta + "일 앞당겼습니다. 홈에서 오늘 열릴 캡슐을 확인하세요.",
+            };
+            render();
+          } else if (action === "reset-demo-date") {
+            commitStorage(Object.assign({}, state.storage, { demoDayOffset: 0 }));
+            state.settingsNotice = { type: "success", text: "기준 날짜를 실제 오늘로 되돌렸습니다." };
+            render();
+          } else if (action === "load-sample") {
+            commitStorage({
+              capsules: createSampleCapsules(getTodayStr()),
+              weeklyReport: null,
+              demoDayOffset: 0,
+            });
+            state.confirmResetAll = false;
+            state.settingsNotice = {
+              type: "success",
+              text: "고1 과목별 샘플 캡슐 6개를 불러왔습니다.",
+            };
+            render();
+          } else if (action === "ask-reset-all") {
+            state.confirmResetAll = true;
+            render();
+          } else if (action === "cancel-reset-all") {
+            state.confirmResetAll = false;
+            render();
+          } else if (action === "confirm-reset-all") {
+            commitStorage(defaultStorage());
+            state.confirmResetAll = false;
+            state.settingsNotice = { type: "success", text: "모든 데이터를 초기화했습니다." };
+            render();
+          } else if (action === "export-json") {
+            triggerBlobDownload(
+              JSON.stringify(state.storage, null, 2),
+              "망각타임캡슐_백업_" + todayStr + ".json",
+              "application/json;charset=utf-8"
+            );
+            state.settingsNotice = { type: "success", text: "JSON 백업 파일을 내려받았습니다." };
+            render();
+          } else if (action === "trigger-import-json") {
+            var fileEl = document.getElementById("import-json-input");
+            if (fileEl) fileEl.click();
+          }
+        });
+
+        document.addEventListener("input", function (e) {
+          var el = e.target;
+          var bind = el.getAttribute && el.getAttribute("data-bind");
+          if (!bind) return;
+          if (bind === "create-topic") {
+            state.createTopic = el.value;
+          } else if (bind === "create-line") {
+            var idx = Number(el.getAttribute("data-idx"));
+            state.createLines[idx] = el.value;
+          } else if (bind === "archive-search") {
+            state.archiveSearch = el.value;
+            render();
+            var searchInput = document.querySelector('[data-bind="archive-search"]');
+            if (searchInput) {
+              searchInput.focus();
+              searchInput.setSelectionRange(state.archiveSearch.length, state.archiveSearch.length);
+            }
+          } else if (bind === "quiz-text") {
+            if (state.quizState) state.quizState.textAnswer = el.value;
+          }
+        });
+
+        document.addEventListener("change", function (e) {
+          var el = e.target;
+          if (el.getAttribute && el.getAttribute("data-bind") === "archive-subject") {
+            state.archiveSubject = el.value;
+            render();
+            return;
+          }
+          if (el.id === "import-json-input") {
+            var file = el.files && el.files[0];
+            if (!file) return;
+            file
+              .text()
+              .then(function (raw) {
+                var parsed = JSON.parse(raw);
+                if (!parsed || !Array.isArray(parsed.capsules)) {
+                  throw new Error("올바른 망각 타임캡슐 백업 파일이 아닙니다.");
+                }
+                commitStorage({
+                  capsules: parsed.capsules,
+                  weeklyReport: parsed.weeklyReport || null,
+                  demoDayOffset: typeof parsed.demoDayOffset === "number" ? parsed.demoDayOffset : 0,
+                });
+                state.settingsNotice = {
+                  type: "success",
+                  text: "백업 파일에서 캡슐 " + parsed.capsules.length + "개를 불러왔습니다.",
+                };
+                render();
+              })
+              .catch(function (err) {
+                state.settingsNotice = {
+                  type: "error",
+                  text: err && err.message ? err.message : "JSON 파일을 읽는 중 오류가 발생했습니다.",
+                };
+                render();
+              });
+          }
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>
